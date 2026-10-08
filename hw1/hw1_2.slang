@@ -22,33 +22,42 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
     image[tid] = float4(0.5, 0.5, 0.5, 1.0);
 
+    float2 p = float2(tid.x + 0.5, (height - 1 - tid.y) + 0.5);
+
     //Check if line y = height - 1 - tid.y intersects with any of our polylines (and x > tid.x)
     if(is_closed && use_fill_color){
         int count = 0;
         for(int i = 0; i < num_polyline; i++){
             float2 p1 = polyline[i];
-            float2 p2 = polyline[0];
-            if(i + 1 < num_polyline){
-                p2 = polyline[i+1];
-            }     
+            float2 p2 = polyline[(i + 1) % num_polyline]; //CHANGE HERE: simpler wrap around logic
 
             bool dir = (p1.y - p2.y) > 0;
 
-            if((height - 1 - tid.y > p1.y && height - 1 - tid.y > p2.y) || 
-                (height - 1 - tid.y < p1.y && height - 1 - tid.y < p2.y)){
+            //CHANGE HERE: <= which somehow fixed the stray line
+            if ((p1.y <= p.y) == (p2.y <= p.y)){
+                continue;
+            } 
+
+            if(p1.x - p2.x == 0){
+                if(p.x < p1.x){
+                    if(dir){
+                        count++;
+                    }else{
+                        count--;
+                    }
+                } 
                 continue;
             }
 
             float m = (p1.y - p2.y) / (p1.x - p2.x);
             float b = p1.y - (m * p1.x);
             
-
-            if (m == 0){
+            if (m == 0){ 
                 continue;
             }
 
-            float x_intersect = ((height - 1 - tid.y) - b)/m;
-            if(x_intersect >= tid.x){
+            float x_intersect = (p.y - b)/m;
+            if(x_intersect > p.x){
                 if(dir){
                     count++;
                 }else{
@@ -62,49 +71,7 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
         }
     }
 
-
-    for (int i = 0; i < num_polyline - 1; i++){
-        //Compute line equation
-        float2 p1 = polyline[i];
-        float2 p2 = polyline[i+1];
-
-        float2 translatedPoint = float2(tid.x, height - 1 - tid.y);
-
-        //compute projection + distance from line
-        float l = dot((p2 - p1), (translatedPoint - p1))/distance(p1, p2);
-
-        float2 q_p = p1 + (l * normalize(p2 - p1));
-        
-        float dist = distance(q_p, translatedPoint);
-
-        if (l > 0 && l < distance(p1, p2) && dist < stroke_width / 2){
-            if(use_stroke_color){
-                image[tid] = float4(stroke_color, 1.0);
-            }
-        }
-    }
-
-    if(is_closed){
-        //Compute line equation
-        float2 p1 = polyline[num_polyline - 1];
-        float2 p2 = polyline[0];
-
-        float2 translatedPoint = float2(tid.x, height - 1 - tid.y);
-
-        //compute projection + distance from line
-        float l = dot((p2 - p1), (translatedPoint - p1))/distance(p1, p2);
-
-        float2 q_p = p1 + (l * normalize(p2 - p1));
-        
-        float dist = distance(q_p, translatedPoint);
-
-        if (l > 0 && l < distance(p1, p2) && dist < stroke_width / 2){
-            if(use_stroke_color){
-                image[tid] = float4(stroke_color, 1.0);
-            }
-        }
-    }
-
+    
     int start = 1;
     int numPoints = num_polyline - 1;
     if(is_closed){
@@ -112,10 +79,35 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
         numPoints++;
     }
 
-    for (int i = start; i < numPoints; i++){
-        float c = distance(polyline[i] + 0.5, float2(tid.x, height - 1 - tid.y) + 0.5);
-        if (c <= stroke_width/2) {
-            image[tid] = float4(stroke_color, 1.0);
+    for (int i = 0; i < numPoints; i++){
+        //Compute line equation
+
+        float2 p1 = polyline[i];
+        float2 p2 = polyline[(i + 1) % num_polyline];
+
+        //compute projection + distance from line
+        float l = dot((p2 - p1), (p - p1))/distance(p1, p2);
+
+        float2 q_p = p1 + (l * normalize(p2 - p1));
+        
+        float dist = distance(q_p, p);
+
+        if (l > 0 && l < distance(p1, p2) && dist <= stroke_width / 2){
+            if(use_stroke_color){
+                image[tid] = float4(stroke_color, 1.0);
+            }
         }
     }
+
+
+    if(use_stroke_color){ //CHANGE HERE: added if statement to fix black corners 
+        //(didn't know what color to use so it zeroed out to black and made a tiny black circle)
+        for (int i = start; i < numPoints; i++){
+            float c = distance(polyline[i], p);
+            if (c <= stroke_width/2) {
+                image[tid] = float4(stroke_color, 1.0);
+            }
+        }
+    }
+ 
 }
