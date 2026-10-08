@@ -188,10 +188,35 @@ def compose_transformation(transforms):
     """
 
     F = np.eye(3, dtype=np.float32)
+    T = np.eye(3, dtype=np.float32)
 
     for transform in transforms:
-        pass
         # TODO: your code here
+        for key, value in transform.items():
+            match key:
+                case "scale":
+                    T = np.array([[value[0], 0, 0], 
+                                [0, value[1], 0], 
+                                [0, 0, 1]])
+                case "shear_x":
+                    T = np.array([[1, value[0], 0], 
+                                [0, 1, 0], 
+                                [0, 0, 1]])
+                case "shear_y":
+                    T = np.array([[1, 0, 0], 
+                                [value[0], 1, 0], 
+                                [0, 0, 1]])
+                case "rotate":
+                    angle = math.radians(value[0])
+                    T = np.array([[math.cos(angle), -math.sin(angle), 0], 
+                                [math.sin(angle), math.cos(angle), 0], 
+                                [0, 0, 1]])
+                case "translate":
+                    T = np.array([[1, 0, value[0]], 
+                                [0, 1, value[1]], 
+                                [0, 0, 1]])
+
+            F = T @ F
 
     return F
 
