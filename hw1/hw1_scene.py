@@ -222,6 +222,29 @@ def compose_transformation(transforms):
 
 def interpolate_transformation(transform_keyframes, t):
     # TODO: your code here
+    
+    if t <= transform_keyframes[0]['time']:
+        return transform_keyframes[0]['transform']
+    if t >= transform_keyframes[-1]['time']:
+        return transform_keyframes[-1]['transform']
+    
+    for i in range(len(transform_keyframes)):
+        if transform_keyframes[i]['time'] > t:
+            pos1 = transform_keyframes[i-1]['transform']
+            pos2 = transform_keyframes[i]['transform']
+            w = (t - transform_keyframes[i-1]['time']) / (transform_keyframes[i]['time'] - transform_keyframes[i-1]['time'])
+            break
+
+    new_transform = []
+    for i in range(len(pos1)):
+        transformation = {}
+        for key, value in pos1[i].items():
+            transformation[key] = []
+            for j in range(len(value)):
+                transformation[key].append(((1 - w) * value[j]) + (w * pos2[i][key][j]))
+        new_transform.append(transformation)
+    
+    return new_transform
 
     # Should never happen?
     assert False
