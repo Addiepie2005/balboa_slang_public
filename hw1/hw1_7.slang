@@ -176,6 +176,7 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
                                 for (int j = first; j < last; j++){
                                     if(in_circle(object_p.xy, points[j], shapes[i].stroke_width/2)){
                                         color = (shapes[i].stroke_rgba.a * shapes[i].stroke_rgba.rgb) + ((1 - shapes[i].stroke_rgba.a) * color);
+                                        break;
                                     }
                                 }
                             }
