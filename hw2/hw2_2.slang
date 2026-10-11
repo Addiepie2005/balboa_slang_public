@@ -24,5 +24,5 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
     // TODO: HW 2.1
 
-    image[ipixel] = float4(float3(0.0), 1.0);
+    color_image[ipixel] = float4(float3(0.0), 1.0);
 }
