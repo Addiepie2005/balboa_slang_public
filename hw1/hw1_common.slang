@@ -46,8 +46,10 @@ bool solve_quadratic(float a, float b, float c,
                      out float2 t) {
     // From https://github.com/mmp/pbrt-v4/blob/master/src/pbrt/util/math.h#L613
     if (a == 0) {
-        if (b == 0)
+        if (b == 0) {
+            t = float2(0.0, 0.0);
             return false;
+        }
         t = float2(-c / b, -c / b);
         return true;
     }
