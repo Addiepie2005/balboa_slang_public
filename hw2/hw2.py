@@ -361,7 +361,7 @@ def hw2_4(args):
         t = args.time % scene.duration if hasattr(args, 'time') else 0.0
         command_encoder = slang_device.create_command_encoder()
         render_frame(command_encoder, t)
-        slang_device.submit_command_buffer(
+        submit_id = slang_device.submit_command_buffer(
             command_encoder.finish()
         )
         slang_device.wait_for_submit(submit_id)
@@ -689,6 +689,27 @@ def hw2_6(args):
         )
         image.save_png(args.output, color_image.to_numpy())
 
+def create_Kd_texture(slang_device, material, scene_dir):
+    if 'texture' in material:
+        filename = os.path.join(scene_dir, material['texture'])
+        rgba = np.asarray(
+            Image.open(filename).convert('RGBA'),
+            dtype=np.uint8)
+    else:
+        color = material['Kd']
+        rgba = np.array(
+            [[[*color, 1.0]]], dtype=np.float32)
+        rgba = np.uint8(np.round(np.clip(rgba, 0, 1) * 255))
+
+    height, width = rgba.shape[:2]
+
+    return slang_device.create_texture(
+        width=width,
+        height=height,
+        format=spy.Format.rgba8_unorm_srgb,
+        usage=spy.TextureUsage.shader_resource,
+        data=np.array(rgba, dtype=np.uint8, copy=True, order='C').ravel()
+    )
 
 def hw2_7(args):
     slang_device = spy.create_device()
