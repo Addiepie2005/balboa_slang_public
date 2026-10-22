@@ -185,10 +185,65 @@ def compose_transformations(transformations):
         Given a list of transformations, compose them into a matrix.
     """
     F = np.eye(4, dtype=np.float32)
+    T = np.eye(3, dtype=np.float32)
 
     for transform in transformations:
-        pass
-        # HW 2.3 TODO: your code here
+        # TODO: your code here
+        for key, value in transform.items():
+            match key:
+                case "scale":
+                    T = np.array([[value[0], 0, 0, 0], 
+                                    [0, value[1], 0, 0], 
+                                    [0, 0, value[2], 0],
+                                    [0, 0, 0, 1]])
+                case "translate":
+                    T = np.array([[1, 0, 0, value[0]], 
+                                    [0, 1, 0, value[1]], 
+                                    [0, 0, 1, value[2]],
+                                    [0, 0, 0, 1]])
+                case "rotate_x":
+                    angle = math.radians(value[0])
+                    T = np.array([[1, 0, 0, 0], 
+                                    [0, math.cos(angle), -math.sin(angle), 0], 
+                                    [0, math.sin(angle), math.cos(angle), 0],
+                                    [0, 0, 0, 1]])
+                case "rotate_y":
+                    angle = math.radians(value[0])
+                    T = np.array([[math.cos(angle), 0, math.sin(angle), 0], 
+                                    [0, 1, 0, 0], 
+                                    [-math.sin(angle), 0, math.cos(angle), 0],
+                                    [0, 0, 0, 1]])
+                case "rotate_z":
+                    angle = math.radians(value[0])
+                    T = np.array([[math.cos(angle), -math.sin(angle), 0, 0], 
+                                    [math.sin(angle), math.cos(angle), 0, 0], 
+                                    [0, 0, 1, 0],
+                                    [0, 0, 0, 1]])
+                case "lookat":
+                    p = value["position"]
+                    t = value["target"]
+                    u = value["up"]
+
+                    sub_t_p = [x - y for x, y in zip(t, p)]
+
+                    if np.linalg.norm(sub_t_p) == 0:
+                        d = (sub_t_p)
+                    else:
+                        d = (sub_t_p)/(np.linalg.norm(sub_t_p))
+
+                    if np.linalg.norm(np.cross(d, u)) == 0:
+                        r = np.cross(d, u)
+                    else:
+                        r = (np.cross(d, u))/(np.linalg.norm(np.cross(d, u)))
+
+                    u_prime = np.cross(r, d)
+
+                    T = np.array([[r[0], u_prime[0], -d[0], p[0]],
+                                    [r[1], u_prime[1], -d[1], p[1]],
+                                    [r[2], u_prime[2], -d[2], p[2]],
+                                    [0, 0, 0, 1]])
+
+            F = T @ F
 
     return F
 

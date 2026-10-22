@@ -203,11 +203,22 @@ def hw2_3(args):
 
     # HW 2.3: implement this
     # change np.zeros into the right matrices
-    projection = np.zeros((4, 4), dtype=np.float32)
-    camera_to_screen = np.zeros((4, 4), dtype=np.float32)
+    s = camera.s
+
+    projection = np.array([[1, 0,  0, 0],
+                        [0, 1,  0, 0],
+                        [0, 0,  0, 1],
+                        [0, 0, -1, 0]])
+
+    screen = np.array([[width / (2*s*a), 0, 0, width / 2],
+                    [0, -height / (2*s), 0, height / 2 - 1],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]])
+
+    camera_to_screen = screen @ projection
     # use camera.cam_to_world
-    view_matrix = np.zeros((4, 4), dtype=np.float32)
-    world_to_screen = np.zeros((4, 4), dtype=np.float32)
+    view_matrix = np.linalg.inv(camera.cam_to_world)
+    world_to_screen = camera_to_screen @ view_matrix
     
     screen_vertices_list = []
     inv_depth_list = []
@@ -215,19 +226,23 @@ def hw2_3(args):
         # HW 2.3: implement this
         # change np.zeros into the right matrix
         # use mesh.model_matrix
-        MVP = np.zeros((4, 4), dtype=np.float32)
+        MVP = world_to_screen @ mesh.model_matrix
         ones = np.ones((mesh.vertices.shape[0], 1), dtype=mesh.vertices.dtype)
         vertices = np.concatenate(
             [mesh.vertices, ones],
             axis=1
         )
+
         # transform vertices using MVP & homogeneous coordinates division
         # The resulting vertices should contain
         # (screen_x, screen_y, inverse_depth).
         # inverse_depth should be positive
         # ---
         # HW 2.3: your code here
-        # ---
+        # ---        
+        v = vertices @ MVP.T
+        v = v / v[:, 3:4]
+        vertices = v
         inv_depth_list.append(np.ascontiguousarray(vertices[:, 2]))
         screen_vertices_list.append(np.ascontiguousarray(vertices[:, :2]))
 
@@ -252,6 +267,27 @@ def hw2_3(args):
             for tri_id in range(mesh.faces.shape[0]):
                 # HW 2.3: implement this
                 # (basically the same as HW 2.2)
+
+                v0, v1, v2 = (int(i) for i in mesh.faces[tri_id])
+
+                sp0 = tuple(float(x) for x in screen_vertices[v0])
+                sp1 = tuple(float(x) for x in screen_vertices[v1])
+                sp2 = tuple(float(x) for x in screen_vertices[v2])
+
+                inv_depth0 = -float(inv_depth[v0])
+                inv_depth1 = -float(inv_depth[v1])
+                inv_depth2 = -float(inv_depth[v2])
+
+                x_min = max(0, math.floor(min(sp0[0], sp1[0], sp2[0])))
+                y_min = max(0, math.floor(min(sp0[1], sp1[1], sp2[1])))
+                x_max = min(width - 1, math.ceil(max(sp0[0], sp1[0], sp2[0])))
+                y_max = min(height - 1, math.ceil(max(sp0[1], sp1[1], sp2[1])))
+                aabb_min = (x_min, y_min)
+                aabb_max = (x_max, y_max)
+
+                c0 = mesh.vertex_colors[v0]
+                c1 = mesh.vertex_colors[v1]
+                c2 = mesh.vertex_colors[v2]
 
                 if aabb_min[0] > aabb_max[0] or aabb_min[1] > aabb_max[1]:
                     continue
