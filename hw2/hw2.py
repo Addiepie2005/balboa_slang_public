@@ -20,15 +20,32 @@ def hw2_1(args):
     def to_screen(p):
         # HW2.1: implement this
         # access "s" using args.s
-        return (0.0, 0.0)
+        x_p = p[0] / -p[2]
+        y_p = p[1] / -p[2]
+
+        x_pp = img.width * ((x_p + (args.s * a)) / (2 * args.s * a))
+        y_pp = img.height - 1 - (img.height * ((y_p + (args.s)) / (2 * args.s)))
+
+        return (x_pp, y_pp)
 
     sp0 = to_screen(args.p0)
     sp1 = to_screen(args.p1)
     sp2 = to_screen(args.p2)
 
     # HW2.1: implement this
-    aabb_min = (0, 0)
-    aabb_max = (10, 10)
+
+
+    # aabb_min = min(sp0[0], sp1[0], sp2[0]), min(sp0[1], sp1[1], sp2[1])
+    # aabb_max = max(sp0[0], sp1[0], sp2[0]), max(sp0[1], sp1[1], sp2[1])
+
+    # We were running into a bug where aabb_min and aabb_max had to be integers, this was how Claude helped us solve it
+    x_min = max(0, math.floor(min(sp0[0], sp1[0], sp2[0])))
+    y_min = max(0, math.floor(min(sp0[1], sp1[1], sp2[1])))
+    x_max = min(img.width - 1, math.ceil(max(sp0[0], sp1[0], sp2[0])))
+    y_max = min(img.height - 1, math.ceil(max(sp0[1], sp1[1], sp2[1])))
+
+    aabb_min = (x_min, y_min)
+    aabb_max = (x_max, y_max)
 
     vars = {'sp0': sp0,
             'sp1': sp1,
@@ -46,9 +63,9 @@ def hw2_1(args):
 
         # Launch the kernel 
         compute_shader.kernel.dispatch(
-            thread_count=[aabb_max[0] - aabb_min[0] + 1,
+            thread_count=spy.uint3(aabb_max[0] - aabb_min[0] + 1,
                           aabb_max[1] - aabb_min[1] + 1,
-                          1],
+                          1),
             command_encoder=command_encoder,
             image=img,
             **vars,
@@ -79,7 +96,14 @@ def hw2_2(args):
 
     def to_screen(p):
         # HW2.2: implement this (basically the same as HW2.1)
-        return (0.0, 0.0)
+        x_p = p[0] / -p[2]
+        y_p = p[1] / -p[2]
+
+        x_pp = args.width * ((x_p + (args.s * a)) / (2 * args.s * a))
+        y_pp = args.height - 1 - (args.height * ((y_p + (args.s)) / (2 * args.s)))
+
+        return (x_pp, y_pp)
+
 
     # splat the triangles onto the screen
     screen_vertices = [to_screen(mesh.vertices[vid, :]) for vid in range(mesh.vertices.shape[0])]
@@ -104,6 +128,26 @@ def hw2_2(args):
             # aabb_min & aabb_max like in 2.1
             # c0, c1, c2 from mesh.vertex_colors
             # use mesh.faces[tri_id] to obtain the vertex indices
+
+            v0, v1, v2 = (int(i) for i in mesh.faces[tri_id])
+
+            sp0, sp1, sp2 = screen_vertices[v0], screen_vertices[v1], screen_vertices[v2]
+
+            inv_depth0 = 1.0 / float(mesh.vertices[v0, 2])
+            inv_depth1 = 1.0 / float(mesh.vertices[v1, 2])
+            inv_depth2 = 1.0 / float(mesh.vertices[v2, 2])
+
+            x_min = max(0, math.floor(min(sp0[0], sp1[0], sp2[0])))
+            y_min = max(0, math.floor(min(sp0[1], sp1[1], sp2[1])))
+            x_max = min(args.width - 1, math.ceil(max(sp0[0], sp1[0], sp2[0])))
+            y_max = min(args.height - 1, math.ceil(max(sp0[1], sp1[1], sp2[1])))
+            aabb_min = (x_min, y_min)
+            aabb_max = (x_max, y_max)
+
+            c0 = mesh.vertex_colors[v0]
+            c1 = mesh.vertex_colors[v1]
+            c2 = mesh.vertex_colors[v2]
+
 
             if aabb_min[0] > aabb_max[0] or aabb_min[1] > aabb_max[1]:
                 continue

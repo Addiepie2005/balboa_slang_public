@@ -1,0 +1,135 @@
+{
+    "resolution": [600, 450],
+    "background": [
+        0.9, 0.74, 0.38
+    ],
+    "objects": [
+        {
+            "type": "polyline",
+            "points": [470, 360, 470, 425],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 5,
+            "closed": false
+        },
+        {
+            "type": "circle",
+            "fill_rgba": [0, 0, 0, 0.75],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 0.15,
+            "transform": [
+                {"scale": [20, 15]},
+                {"translate": [450, 360]}
+            ]
+        },
+        {
+            "type": "polyline",
+            "points": [420, 340, 420, 405],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 5,
+            "closed": false
+        },
+        {
+            "type": "circle",
+            "fill_rgba": [0, 0, 0, 0.75],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 0.15,
+            "transform": [
+                {"scale": [20, 15]},
+                {"translate": [400, 340]}
+            ]
+        },
+        {
+            "type": "rectangle",
+            "p_min": [89, 210],
+            "p_max": [121, 320],
+            "fill_rgba": [0, 0, 0, 1.0]
+        },
+        {
+            "type": "rectangle",
+            "p_min": [154, 210],
+            "p_max": [186, 320],
+            "fill_rgba": [0, 0, 0, 1.0]
+        },
+        {
+            "type": "rectangle",
+            "p_min": [284, 210],
+            "p_max": [316, 320],
+            "fill_rgba": [0, 0, 0, 1.0]
+        },
+        {
+            "type": "rectangle",
+            "p_min": [349, 210],
+            "p_max": [381, 320],
+            "fill_rgba": [0, 0, 0, 1.0]
+        },
+        {
+            "type": "rectangle",
+            "p_min": [414, 210],
+            "p_max": [446, 320],
+            "fill_rgba": [0, 0, 0, 1.0]
+        },
+        {
+            "type": "rectangle",
+            "p_min": [544, 210],
+            "p_max": [560, 320],
+            "fill_rgba": [0, 0, 0, 1.0]
+        },
+        {
+            "type": "polyline",
+            "points": [105, 130, 105, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "polyline",
+            "points": [170, 130, 170, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "polyline",
+            "points": [235, 130, 235, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "polyline",
+            "points": [300, 130, 300, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "polyline",
+            "points": [365, 130, 365, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "polyline",
+            "points": [430, 130, 430, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "polyline",
+            "points": [495, 130, 495, 320],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4,
+            "closed": false
+        },
+        {
+            "type": "rectangle",
+            "p_min": [40, 320],
+            "p_max": [560, 130],
+            "fill_rgba": [1.0, 1.0, 1.0, 1.0],
+            "stroke_rgba": [0, 0, 0, 1.0],
+            "stroke_width": 4
+        }
+    ]
+}
