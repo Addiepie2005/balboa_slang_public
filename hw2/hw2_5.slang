@@ -206,7 +206,7 @@ void shade(
 
         float3 c = (barycentric[0] * vertex_colors[faces[face_id][0]]) + (barycentric[1] * vertex_colors[faces[face_id][1]]) + (barycentric[2] * vertex_colors[faces[face_id][2]]);
 
-        image[tid] = float4(c, 1);
+        image[tid] = float4(c, 1.0);
     }
 
 }
