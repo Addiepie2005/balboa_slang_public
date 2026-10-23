@@ -1,0 +1,19 @@
+{
+    "camera": {
+        "resolution": [800, 600],
+        "transform": [
+            {"lookat": {"position": [0, 1, 4], "target": [0, 0.8, 0], "up": [0, 1, 0]}}
+        ],
+        "s": 0.5
+    },
+    "background": [0.2, 0.2, 0.25],
+    "objects": [
+        {
+            "filename": "duck_mesh.json",
+            "transform": [{"scale": [0.01, 0.01, 0.01]},
+                            {"rotate_y": [-90]}],
+
+            "material": {"texture": "DuckCM.png"}
+        }
+    ]
+}
