@@ -17,9 +17,10 @@ def hw2_1(args):
     img = buffer.create_texture_2d(slang_device, args.width, args.height)
 
     a = img.width / img.height
-    def to_screen(p):
+    def to_screen(p): #Takes coords from porjected camera space to screen space using fomula from the HW
         # HW2.1: implement this
         # access "s" using args.s
+
         x_p = p[0] / -p[2]
         y_p = p[1] / -p[2]
 
@@ -34,6 +35,7 @@ def hw2_1(args):
 
     # HW2.1: implement this
 
+    #Finding AABB with minimum x and y of the three pts
 
     # aabb_min = min(sp0[0], sp1[0], sp2[0]), min(sp0[1], sp1[1], sp2[1])
     # aabb_max = max(sp0[0], sp1[0], sp2[0]), max(sp0[1], sp1[1], sp2[1])
@@ -129,14 +131,16 @@ def hw2_2(args):
             # c0, c1, c2 from mesh.vertex_colors
             # use mesh.faces[tri_id] to obtain the vertex indices
 
+            #Retrieve coords themselves
             v0, v1, v2 = (int(i) for i in mesh.faces[tri_id])
-
             sp0, sp1, sp2 = screen_vertices[v0], screen_vertices[v1], screen_vertices[v2]
 
+            #Inverse depths (should be positive...?)
             inv_depth0 = 1.0 / float(mesh.vertices[v0, 2])
             inv_depth1 = 1.0 / float(mesh.vertices[v1, 2])
             inv_depth2 = 1.0 / float(mesh.vertices[v2, 2])
 
+            #Finding AABB
             x_min = max(0, math.floor(min(sp0[0], sp1[0], sp2[0])))
             y_min = max(0, math.floor(min(sp0[1], sp1[1], sp2[1])))
             x_max = min(args.width - 1, math.ceil(max(sp0[0], sp1[0], sp2[0])))
@@ -144,6 +148,7 @@ def hw2_2(args):
             aabb_min = (x_min, y_min)
             aabb_max = (x_max, y_max)
 
+            #Retrieve colors
             c0 = mesh.vertex_colors[v0]
             c1 = mesh.vertex_colors[v1]
             c2 = mesh.vertex_colors[v2]
@@ -205,11 +210,13 @@ def hw2_3(args):
     # change np.zeros into the right matrices
     s = camera.s
 
+    #projection matrix as given (helps go from between camera space, projected camera space, and screen space???????)
     projection = np.array([[1, 0,  0, 0],
                         [0, 1,  0, 0],
                         [0, 0,  0, 1],
                         [0, 0, -1, 0]])
 
+    #instead of using to_screen to convert from projected camera to screen space, now we're just going to multiply this matrix
     screen = np.array([[width / (2*s*a), 0, 0, width / 2],
                     [0, -height / (2*s), 0, height / 2 - 1],
                     [0, 0, 1, 0],
@@ -226,6 +233,8 @@ def hw2_3(args):
         # HW 2.3: implement this
         # change np.zeros into the right matrix
         # use mesh.model_matrix
+
+        #world_to_screen contains PV
         MVP = world_to_screen @ mesh.model_matrix
         ones = np.ones((mesh.vertices.shape[0], 1), dtype=mesh.vertices.dtype)
         vertices = np.concatenate(
@@ -239,8 +248,11 @@ def hw2_3(args):
         # inverse_depth should be positive
         # ---
         # HW 2.3: your code here
-        # ---        
+        # --- 
+
+        #multiply current point by matrix       
         v = vertices @ MVP.T
+        #divide all by -z (so we have screen space coords and inv depth)
         v = v / v[:, 3:4]
         vertices = v
         inv_depth_list.append(np.ascontiguousarray(vertices[:, 2]))
@@ -337,11 +349,13 @@ def interpolate_transformation(transform_keyframes, t):
     # as the "transform" field in the scene JSON.
     interp_transforms = []
 
+    #Bounds check
     if t <= transform_keyframes[0]['time']:
         return transform_keyframes[0]['transform']
     if t >= transform_keyframes[-1]['time']:
         return transform_keyframes[-1]['transform']
 
+    #Find which two keyframes we are between
     for i in range(len(transform_keyframes)):
         if transform_keyframes[i]['time'] > t:
             pos1 = transform_keyframes[i-1]['transform']
@@ -349,6 +363,7 @@ def interpolate_transformation(transform_keyframes, t):
             w = (t - transform_keyframes[i-1]['time']) / (transform_keyframes[i]['time'] - transform_keyframes[i-1]['time'])
             break
 
+    #interpolate between two frames
     interp_transforms = []
     for i in range(len(pos1)):
         transformation = {}
@@ -380,8 +395,6 @@ def hw2_4(args):
 
     a = width / height
 
-    
-
     # HW 2.4 TODO: implement this (basically the same as 2.3)
     # change np.zeros into the right mSatrices
     s = camera.s
@@ -403,6 +416,8 @@ def hw2_4(args):
         t = t % scene.duration
         # HW 2.4 TODO: insert your code here and fill in world_to_screen
         # by using interpolate_transformation to compute the view matrix at time t
+
+        #If we have keyframes, the cam_to_world matrix changes to use our linearly interpolated pts
         if camera.transform_keyframes:
             cam_to_world = hw2_scene.compose_transformations(
                 interpolate_transformation(camera.transform_keyframes, t))
@@ -416,6 +431,8 @@ def hw2_4(args):
         for mesh in scene.meshes:
             # HW 2.4 TODO: insert your code here and fill in the MVP matrix
             # by using interpolate_transformation to compute the model matrix at time t
+
+            #If we have keyframes, the model matrix changes to use our linearly interpolated pts
             if mesh.transform_keyframes:
                 model_matrix = hw2_scene.compose_transformations(
                     interpolate_transformation(mesh.transform_keyframes, t))

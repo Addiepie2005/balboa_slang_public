@@ -51,7 +51,7 @@ bool is_degenerate(float3 sp0, float3 sp1, float3 sp2){
     float3 e01 = sp1 - sp0;
     float3 e02 = sp2 - sp0;
     float area = length(cross(e01, e02)) / 2;
-    return !(area > 1e-8);   // also catches NaN
+    return !(area > 1e-8); 
 }
 
 
@@ -116,6 +116,7 @@ void rasterize_depth(
     int x_max = min(width - 1, (int)ceil(fmax3(sp0.x, sp1.x, sp2.x)));
     int y_max = min(height - 1, (int)ceil(fmax3(sp0.y, sp1.y, sp2.y)));
 
+    //Filling in dpeth buffer
     for (int x = x_min; x <= x_max; x++){
         for (int y = y_min; y <= y_max; y++){
             float2 p = float2(x + 0.5, y + 0.5);
@@ -159,6 +160,7 @@ void rasterize_id(
     int x_max = min(width - 1, (int)ceil(fmax3(sp0.x, sp1.x, sp2.x)));
     int y_max = min(height - 1, (int)ceil(fmax3(sp0.y, sp1.y, sp2.y)));
 
+    //id of the triangle that has the closest depth at this point
     for (int x = x_min; x <= x_max; x++){
         for (int y = y_min; y <= y_max; y++){
             float2 p = float2(x + 0.5, y + 0.5);
@@ -192,6 +194,7 @@ void shade(
 
     // HW 2.5 TODO
 
+    //Using the ids we found before, color this pixel correctly
     uint face_id = triangle_id_buffer[tid.y * width + tid.x];
 
     if(face_id != 0xffffffff){

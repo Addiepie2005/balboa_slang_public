@@ -1,3 +1,4 @@
+//Reverse of previous, takes from screen space to projected camera space
 float x_screen_to_camera(float x, float s, float a, float width){
     return ((x * 2 * s * a) / width) + (s * a);
 }
@@ -52,32 +53,40 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
         return;
     }
 
-    // projected camera space
+    //Coords in projected camera space
     float3 sp0_camera = float3(x_screen_to_camera(sp0.x, s, a, width), y_screen_to_camera(sp0.y, s, a, height), -1);
     float3 sp1_camera = float3(x_screen_to_camera(sp1.x, s, a, width), y_screen_to_camera(sp1.y, s, a, height), -1);
     float3 sp2_camera = float3(x_screen_to_camera(sp2.x, s, a, width), y_screen_to_camera(sp2.y, s, a, height), -1);
 
     float3 p_camera = float3(x_screen_to_camera(p.x, s, a, width), y_screen_to_camera(p.y, s, a, height), -1);
 
+
+    //Find barycentric coordinates
     float camera_whole_area = length(cross((sp1_camera - sp0_camera), (sp2_camera - sp1_camera))) / 2;
     float camera_b0_area = length(cross((sp1_camera - p_camera), (sp2_camera - sp1_camera))) / 2;
     float camera_b1_area = length(cross((p_camera - sp0_camera), (sp2_camera - p_camera))) / 2;
     float camera_b2_area = length(cross((sp1_camera - sp0_camera), (p_camera - sp1_camera))) / 2;
     
+    //b's in camera space
     float b0_camera = camera_b0_area/camera_whole_area;
     float b1_camera = camera_b1_area/camera_whole_area;
     float b2_camera = camera_b2_area/camera_whole_area;
 
+    //b's in object??? space
     float b0_original = (b0_camera * inv_depth0) / ((b0_camera * inv_depth0) + (b1_camera * inv_depth1) + (b2_camera * inv_depth2));
     float b1_original = (b1_camera * inv_depth1) / ((b0_camera * inv_depth0) + (b1_camera * inv_depth1) + (b2_camera * inv_depth2));
     float b2_original = (b2_camera * inv_depth2) / ((b0_camera * inv_depth0) + (b1_camera * inv_depth1) + (b2_camera * inv_depth2));
 
+    //Use b's to find the z value of current point
+    //z is negative, so we negate it to get a positive depth
     float z_original = -((b0_original * 1/inv_depth0) + (b1_original * 1/inv_depth1) + (b2_original * 1/inv_depth2));
 
+    //Similar process of using b's to find color
     float3 c = (b0_original * c0) + (b1_original * c1) + (b2_original * c2);
 
+    //When the depth of our point is less than any recorded depth at this point, we are in front and can draw color there
     if(z_original < depth_image[ipixel]){
-        depth_image[ipixel] = z_original;
-        color_image[ipixel] = float4(c, 1.0);
+        depth_image[ipixel] = z_original; //updaate buffer
+        color_image[ipixel] = float4(c, 1.0); //color pixel 
     }
 }

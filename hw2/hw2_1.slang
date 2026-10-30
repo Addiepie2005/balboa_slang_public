@@ -30,6 +30,7 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
     float m12 = dot((p - sp1), n12);
     float m20 = dot((p - sp2), n20);
 
+    //if all results are neg or pos, then we're in the triangle
     if(m01 < 0 && m12 < 0 && m20 < 0 || (m01 >= 0 && m12 >= 0 && m20 >= 0)){
         image[ipixel] = float4(color, 1.0);
     }
