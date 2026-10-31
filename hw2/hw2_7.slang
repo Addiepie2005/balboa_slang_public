@@ -39,15 +39,19 @@ float4 fragment_main(VertexOutput input) : SV_Target {
     float3 v = normalize(camera_position - input.world_position);
     float3 Kd = Kd_texture.Sample(Kd_sampler, input.uv).rgb;
 
+    // diffuse contribution
     float3 Cd = Kd * (light_color * max(0, dot(n, l)));
 
+    // mirror reflection direction
     float3 r = reflect(-l, n);
 
+    // specular contribution
     float3 Cs = float3(0, 0, 0);
     if(dot(n, l) > 0){
         Cs = Ks * (light_color * pow(max(0, dot(r, v)), exponent));
     }
 
+    // ambient contribution
     float3 Ca = 0.2 * Kd;
 
     float3 C = Ca + Cd + Cs;
