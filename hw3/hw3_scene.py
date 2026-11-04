@@ -46,13 +46,105 @@ def compose_transformations(transformations):
     # HW 3.4: copy paste your HW2.3 code here
 
     F = np.eye(4, dtype=np.float32)
+    T = np.eye(3, dtype=np.float32)
+
+    for transform in transformations:
+        # TODO: your code here
+        for key, value in transform.items():
+            match key:
+                case "scale":
+                    T = np.array([[value[0], 0, 0, 0], 
+                                    [0, value[1], 0, 0], 
+                                    [0, 0, value[2], 0],
+                                    [0, 0, 0, 1]])
+                case "translate":
+                    T = np.array([[1, 0, 0, value[0]], 
+                                    [0, 1, 0, value[1]], 
+                                    [0, 0, 1, value[2]],
+                                    [0, 0, 0, 1]])
+                case "rotate_x":
+                    angle = math.radians(value[0])
+                    T = np.array([[1, 0, 0, 0], 
+                                    [0, math.cos(angle), -math.sin(angle), 0], 
+                                    [0, math.sin(angle), math.cos(angle), 0],
+                                    [0, 0, 0, 1]])
+                case "rotate_y":
+                    angle = math.radians(value[0])
+                    T = np.array([[math.cos(angle), 0, math.sin(angle), 0], 
+                                    [0, 1, 0, 0], 
+                                    [-math.sin(angle), 0, math.cos(angle), 0],
+                                    [0, 0, 0, 1]])
+                case "rotate_z":
+                    angle = math.radians(value[0])
+                    T = np.array([[math.cos(angle), -math.sin(angle), 0, 0], 
+                                    [math.sin(angle), math.cos(angle), 0, 0], 
+                                    [0, 0, 1, 0],
+                                    [0, 0, 0, 1]])
+                case "lookat":
+                    p = value["position"]
+                    t = value["target"]
+                    u = value["up"]
+
+                    sub_t_p = [x - y for x, y in zip(t, p)]
+
+                    if np.linalg.norm(sub_t_p) == 0:
+                        d = (sub_t_p)
+                    else:
+                        d = (sub_t_p)/(np.linalg.norm(sub_t_p))
+
+                    if np.linalg.norm(np.cross(d, u)) == 0:
+                        r = np.cross(d, u)
+                    else:
+                        r = (np.cross(d, u))/(np.linalg.norm(np.cross(d, u)))
+
+                    u_prime = np.cross(r, d)
+
+                    T = np.array([[r[0], u_prime[0], -d[0], p[0]],
+                                    [r[1], u_prime[1], -d[1], p[1]],
+                                    [r[2], u_prime[2], -d[2], p[2]],
+                                    [0, 0, 0, 1]])
+
+            F = T @ F
+
     return F
 
 def interpolate_transformation(transform_keyframes, t):
     # HW 3.4: copy your HW2.4 code here.
 
     # create a new transform from the two keyframes
+
+    #Bounds check
+    if t <= transform_keyframes[0]['time']:
+        return transform_keyframes[0]['transform']
+    if t >= transform_keyframes[-1]['time']:
+        return transform_keyframes[-1]['transform']
+
+    #Find which two keyframes we are between
+    for i in range(len(transform_keyframes)):
+        if transform_keyframes[i]['time'] > t:
+            pos1 = transform_keyframes[i-1]['transform']
+            pos2 = transform_keyframes[i]['transform']
+            w = (t - transform_keyframes[i-1]['time']) / (transform_keyframes[i]['time'] - transform_keyframes[i-1]['time'])
+            break
+
+    #interpolate between two frames
     interp_transforms = []
+    for i in range(len(pos1)):
+        transformation = {}
+        for key, value in pos1[i].items():
+            if key == "lookat":
+                transformation[key] = {}
+                for ptu, coords in value.items():
+                    transformation[key][ptu] = []
+                    for j in range(len(coords)):
+                        transformation[key][ptu].append(((1 - w) * value[ptu][j]) + (w * pos2[i][key][ptu][j]))
+            else:
+                transformation[key] = []
+                for j in range(len(value)):
+                    transformation[key].append(((1 - w) * value[j]) + (w * pos2[i][key][j]))
+        
+        interp_transforms.append(transformation)
+
     return interp_transforms
 
 def get_transformation(obj, t):
