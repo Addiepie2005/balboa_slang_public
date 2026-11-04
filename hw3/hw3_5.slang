@@ -186,7 +186,7 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
                             float t;
                             float3 barycentrics;
-                            if (intersect_tri(p0, p1, p2, obj_shadow_origin, obj_shadow_dir, EPSILON, closest_depth, barycentrics, t)){
+                            if (intersect_tri(p0, p1, p2, obj_shadow_origin, obj_shadow_dir, EPSILON, d, barycentrics, t)){
                                 shadow = true;
                                 break;
                             }
