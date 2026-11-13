@@ -14,6 +14,7 @@ void predict(uint tid : SV_DispatchThreadID,
         return;
     }
     // TODO: HW 4.2. Your code below.
+    //Applies gravity (0, −9.8, 0) to the velocity and update the position 
 }
 
 [shader("compute")]
@@ -28,6 +29,11 @@ void project_constraints(uint tid : SV_DispatchThreadID,
         return;
     }
     // TODO: HW 4.2. Your code below.
+    //The project kernel does the actual Jacobi iteration
+
+    //for each particle, we look at its neighbors
+
+    //compute the “correction” for each edge using the distance constraints
 }
 
 [shader("compute")]
