@@ -10,4 +10,17 @@ void compute_main(uint tid : SV_DispatchThreadID,
         return;
     }
     // TODO: HW 4.1. Your code below.
+
+    //Find v_n+1
+    velocities[tid].y = velocities[tid].y + (dt * -9.8);
+
+    //and update the position
+    positions[tid] = positions[tid] + (dt * velocities[tid]);
+    
+    //reverse velocity and clip if needed
+    if(positions[tid].y <= -0.97){
+        positions[tid].y = -0.97;
+        velocities[tid].y = -velocities[tid].y;
+    }
 }
+
