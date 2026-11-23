@@ -127,7 +127,7 @@ void detect_collision(uint tid : SV_DispatchThreadID,
     bool found_tri = false;
 
     int node_index = 0;
-    while(node_index >= 0){
+    while (node_index >= 0 && node_index < (int)num_bvh_nodes) {
         BVHNode node = bvh_nodes[node_index];
         if (point_aabb_distance(positions[tid], node.bbox_min, node.bbox_max) > min_dist){
             node_index = node.next_index;
@@ -135,7 +135,7 @@ void detect_collision(uint tid : SV_DispatchThreadID,
         }
 
         if(node.is_leaf){
-            for(int i = node.triangle_begin; i < node.triangle_end; i ++){
+            for(uint i = node.triangle_begin; i < node.triangle_end; i ++){
                 uint3 tri = mesh_triangles[i];
                 //Get vertices of current triangle
                 float3 p0 = mesh_vertices[tri.x];
@@ -180,7 +180,7 @@ void detect_collision(uint tid : SV_DispatchThreadID,
     }
 
 
-    // compare smallest plane, smallest sphere, and smallest triangle to find the ultimate tinyness (planes win in case of tie)
+    // compare smallest plane, smallest sphere, and smallest triangle to find the ultimate tinyness
     // also detect collision
     contact_planes[tid] = float4(0.0);
     if(smallest_sphere_dist < smallest_plane_dist && smallest_sphere_dist < smallest_tri_dist){
