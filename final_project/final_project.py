@@ -14,7 +14,7 @@ import json
 
 def final_project(args):
     slang_device = spy.create_device()
-    compute_shader = device.load_compute_shader(slang_device, 'final_project/cel_shading.slang')
+    compute_shader = device.load_compute_shader(slang_device, 'final_project/final_project.slang')
     img = buffer.create_texture_2d(slang_device, args.width, args.height)
 
     bindings, scene, shapes = final_project_scene.upload_scene(

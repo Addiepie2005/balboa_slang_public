@@ -238,8 +238,21 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
             // If this point light is not blocked, add its light contribution 
             if(!shadow){
+                float shade_level;
                 float3 l = shadow_dir; 
-                color += throughput * (light.intensity / (d * d)) * (Kd * max(dot(n, l), 0));
+
+                //CELL SHADING
+                if (mode == 0){
+                    if(dot(n, l) > 0){
+                        shade_level = 1;
+                    } else {
+                        shade_level = 0;
+                    }
+                } else {
+                    shade_level = max(dot(n, l), 0);
+                }
+
+                color += throughput * (light.intensity / (d * d)) * (Kd * shade_level);
             }
         }
 
