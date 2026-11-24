@@ -3,6 +3,7 @@ import hw1
 import hw2
 import hw3
 import hw4
+import final_project
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -119,6 +120,13 @@ if __name__ == "__main__":
     p.add_argument('scene')
     p.add_argument('-time', type=float, default=0)
     p.set_defaults(func=hw3.hw3_6)
+
+    # Final Project
+    p = subparsers.add_parser("fp")
+    p.add_argument('scene')
+    p.add_argument('-time', type=float, default=0)
+    p.add_argument('-mode', choices=['cel', 'hatch', 'toon_all'], default='cel')
+    p.set_defaults(func=final_project.final_project)
 
     # HW 4
     for part, func in [
