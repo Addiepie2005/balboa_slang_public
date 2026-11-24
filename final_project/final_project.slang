@@ -244,23 +244,27 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
                 //CELL SHADING
                 if (mode == 0){
                     if(dot(n, l) > 0){
-                        shade_level = 1;
+                        shade_level = 1.5;
                     } else {
-                        shade_level = 0;
+                        shade_level = 0.0;
                     }
                 } else {
                     shade_level = max(dot(n, l), 0);
                 }
 
                 color += throughput * (light.intensity / (d * d)) * (Kd * shade_level);
+            } else {
+                color += throughput * Kd * 0.25;
             }
+
+            
         }
+
 
         throughput *= Kr;
         origin = hit_point;
         dir = reflect(dir, n);
         
     }
-
     image[tid] = float4(color, 1.0); 
 }
